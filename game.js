@@ -1,11 +1,11 @@
-// ================================
-// Minecraft Browser Edition
-// v0.1.1
-// ================================
+// =====================================
+// Minecraft Browser Edition v0.1.1
+// 青空・3Dエンジン・FPS表示
+// =====================================
 
-// シーン作成
+// シーン
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87CEEB);
+scene.background = new THREE.Color(0x87ceeb);
 
 // カメラ
 const camera = new THREE.PerspectiveCamera(
@@ -23,60 +23,58 @@ const renderer = new THREE.WebGLRenderer({
 });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.shadowMap.enabled = true;
 
 document.body.appendChild(renderer.domElement);
 
 // 太陽光
-const light = new THREE.DirectionalLight(0xffffff, 1.2);
-
-light.position.set(30, 100, 50);
-
-scene.add(light);
+const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+sun.position.set(50, 100, 50);
+sun.castShadow = true;
+scene.add(sun);
 
 // 環境光
-scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+const ambient = new THREE.AmbientLight(0xffffff, 0.45);
+scene.add(ambient);
 
-// FPS
-let last = performance.now();
-let frames = 0;
+// FPS表示
+let frameCount = 0;
+let lastTime = performance.now();
 
-function updateFPS(){
+function updateFPS() {
 
-    frames++;
+    frameCount++;
 
     const now = performance.now();
 
-    if(now-last>=1000){
+    if (now - lastTime >= 1000) {
 
         document.getElementById("fps").textContent =
-            "FPS: "+frames;
+            "FPS: " + frameCount;
 
-        frames=0;
-        last=now;
+        frameCount = 0;
+        lastTime = now;
     }
-
 }
 
-// 描画
-function animate(){
+// アニメーション
+function animate() {
 
     requestAnimationFrame(animate);
 
     updateFPS();
 
-    renderer.render(scene,camera);
+    renderer.render(scene, camera);
 
 }
 
 animate();
 
-// リサイズ
-window.addEventListener("resize",()=>{
+// リサイズ対応
+window.addEventListener("resize", () => {
 
-    camera.aspect =
-        window.innerWidth/window.innerHeight;
-
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
     renderer.setSize(
