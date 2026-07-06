@@ -1,6 +1,6 @@
 // =====================================
-// Minecraft Browser Edition v0.1.1
-// 青空・3Dエンジン・FPS表示
+// Minecraft Browser Edition v0.1.2
+// 青空 + 地面
 // =====================================
 
 // シーン
@@ -15,12 +15,11 @@ const camera = new THREE.PerspectiveCamera(
     1000
 );
 
-camera.position.set(0, 2, 5);
+camera.position.set(0, 12, 20);
+camera.lookAt(0, 0, 0);
 
 // レンダラー
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -28,58 +27,114 @@ renderer.shadowMap.enabled = true;
 
 document.body.appendChild(renderer.domElement);
 
-// 太陽光
-const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-sun.position.set(50, 100, 50);
+// ライト
+const sun = new THREE.DirectionalLight(0xffffff, 1.3);
+sun.position.set(30, 60, 20);
 sun.castShadow = true;
 scene.add(sun);
 
-// 環境光
-const ambient = new THREE.AmbientLight(0xffffff, 0.45);
-scene.add(ambient);
+scene.add(new THREE.AmbientLight(0xffffff, 0.45));
 
-// FPS表示
-let frameCount = 0;
-let lastTime = performance.now();
+// ===== 地面 =====
 
-function updateFPS() {
+const blockSize = 1;
 
-    frameCount++;
+const grassMaterial = new THREE.MeshLambertMaterial({
+    color: 0x5fb14a
+});
 
-    const now = performance.now();
+const dirtMaterial = new THREE.MeshLambertMaterial({
+    color: 0x7a5230
+});
 
-    if (now - lastTime >= 1000) {
+for(let x=-16;x<16;x++){
 
-        document.getElementById("fps").textContent =
-            "FPS: " + frameCount;
+    for(let z=-16;z<16;z++){
 
-        frameCount = 0;
-        lastTime = now;
+        // 草
+        const grass = new THREE.Mesh(
+
+            new THREE.BoxGeometry(blockSize,blockSize,blockSize),
+
+            grassMaterial
+
+        );
+
+        grass.position.set(x,0,z);
+
+        grass.castShadow=true;
+        grass.receiveShadow=true;
+
+        scene.add(grass);
+
+        // 土
+        for(let y=-1;y>=-3;y--){
+
+            const dirt=new THREE.Mesh(
+
+                new THREE.BoxGeometry(blockSize,blockSize,blockSize),
+
+                dirtMaterial
+
+            );
+
+            dirt.position.set(x,y,z);
+
+            dirt.receiveShadow=true;
+
+            scene.add(dirt);
+
+        }
+
     }
+
 }
 
-// アニメーション
-function animate() {
+// FPS
+
+let frames=0;
+let last=performance.now();
+
+function updateFPS(){
+
+    frames++;
+
+    const now=performance.now();
+
+    if(now-last>=1000){
+
+        document.getElementById("fps").textContent="FPS: "+frames;
+
+        frames=0;
+
+        last=now;
+
+    }
+
+}
+
+// 描画
+
+function animate(){
 
     requestAnimationFrame(animate);
 
     updateFPS();
 
-    renderer.render(scene, camera);
+    renderer.render(scene,camera);
 
 }
 
 animate();
 
-// リサイズ対応
-window.addEventListener("resize", () => {
+// リサイズ
 
-    camera.aspect = window.innerWidth / window.innerHeight;
+window.addEventListener("resize",()=>{
+
+    camera.aspect=window.innerWidth/window.innerHeight;
+
     camera.updateProjectionMatrix();
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
+    renderer.setSize(window.innerWidth,window.innerHeight);
 
 });
